@@ -15,90 +15,54 @@ class NitroBackgroundTimer : HybridNitroBackgroundTimerSpec() {
 
   private val handler = Handler(Looper.getMainLooper())
   private val powerManager = context.getSystemService(android.content.Context.POWER_SERVICE) as PowerManager
+
   @SuppressLint("InvalidWakeLockTag")
-  private val wakeLock: PowerManager.WakeLock =
-    powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "NitroBackgroundTimer")
-
-  private val timeoutRunnables = HashMap<Int, Runnable>()
-  private val intervalRunnables = HashMap<Int, Runnable>()
-
-  // --- WakeLock helpers ---
-  @SuppressLint("WakelockTimeout")
-  private fun acquireWakeLock() {
-    if (!wakeLock.isHeld) {
-      wakeLock.acquire()
+  private val androidWakeLock: PowerManager.WakeLock =
+    powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "NitroBackgroundTimer").apply {
+      setReferenceCounted(false)
     }
-  }
 
-  private fun releaseWakeLockIfNeeded() {
-    if (timeoutRunnables.isEmpty() && intervalRunnables.isEmpty() && wakeLock.isHeld) {
-      wakeLock.release()
-    }
-  }
-
-  // --- Timeout ---
-  override fun setTimeout(id: Double, duration: Double, callback: (Double) -> Unit): Double {
-    val intId = id.toInt()
-    clearTimeout(id)
-
-    acquireWakeLock()
-    val runnable = Runnable {
-      try {
-        callback(id)
-      } catch (e: Exception) {
-        Log.e("NitroBackgroundTimer", "Callback error in setTimeout($id): ${e.message}", e)
+  private val core = BackgroundTimerCore(
+    scheduler = object : TimerScheduler {
+      override fun schedule(runnable: Runnable, delayMs: Long) {
+        handler.postDelayed(runnable, delayMs)
       }
-      timeoutRunnables.remove(intId)
-      releaseWakeLockIfNeeded()
-    }
 
-    timeoutRunnables[intId] = runnable
-    handler.postDelayed(runnable, duration.toLong())
-    return id
-  }
+      override fun cancel(runnable: Runnable) {
+        handler.removeCallbacks(runnable)
+      }
+    },
+    wakeLock = object : TimerWakeLock {
+      override val isHeld: Boolean
+        get() = androidWakeLock.isHeld
+
+      @SuppressLint("WakelockTimeout")
+      override fun acquire() {
+        androidWakeLock.acquire()
+      }
+
+      override fun release() {
+        androidWakeLock.release()
+      }
+    },
+    onError = { tag, message, throwable -> Log.e(tag, message, throwable) }
+  )
+
+  override fun setTimeout(id: Double, duration: Double, callback: (Double) -> Unit): Double =
+    core.setTimeout(id, duration, callback)
 
   override fun clearTimeout(id: Double) {
-    val intId = id.toInt()
-    timeoutRunnables[intId]?.let { handler.removeCallbacks(it) }
-    timeoutRunnables.remove(intId)
-    releaseWakeLockIfNeeded()
+    core.clearTimeout(id)
   }
 
-  // --- Interval ---
-  override fun setInterval(id: Double, interval: Double, callback: (Double) -> Unit): Double {
-    val intId = id.toInt()
-    clearInterval(id)
-
-    acquireWakeLock()
-    val runnable = object : Runnable {
-      override fun run() {
-        try {
-          callback(id)
-        } catch (e: Exception) {
-          Log.e("NitroBackgroundTimer", "Callback error in setInterval($id): ${e.message}", e)
-        }
-        handler.postDelayed(this, interval.toLong())
-      }
-    }
-
-    intervalRunnables[intId] = runnable
-    handler.postDelayed(runnable, interval.toLong())
-    return id
-  }
+  override fun setInterval(id: Double, interval: Double, callback: (Double) -> Unit): Double =
+    core.setInterval(id, interval, callback)
 
   override fun clearInterval(id: Double) {
-    val intId = id.toInt()
-    intervalRunnables[intId]?.let { handler.removeCallbacks(it) }
-    intervalRunnables.remove(intId)
-    releaseWakeLockIfNeeded()
+    core.clearInterval(id)
   }
 
-  // --- Cleanup ---
   protected fun finalize() {
-    timeoutRunnables.values.forEach { handler.removeCallbacks(it) }
-    intervalRunnables.values.forEach { handler.removeCallbacks(it) }
-    timeoutRunnables.clear()
-    intervalRunnables.clear()
-    if (wakeLock.isHeld) wakeLock.release()
+    core.cleanup()
   }
 }
