@@ -29,6 +29,30 @@ npm install react-native-nitro-bg-timer react-native-nitro-modules
 yarn add react-native-nitro-bg-timer react-native-nitro-modules
 ```
 
+### Install a pinned release from GitHub (recommended for CI)
+
+For applications that run `yarn install --immutable` in CI (e.g. Expo EAS
+builds), prefer pinning to a GitHub Release asset URL instead of a git
+commit SHA. Release assets are served as immutable blobs from GitHub's
+CDN, so the tarball checksum stays stable across every fetch, whereas
+`git+https://github.com/.../commit=<sha>` references are re-packed
+on-the-fly by GitHub and can produce slightly different bytes between
+requests — breaking `--immutable` with `YN0018: The remote archive
+doesn't match the expected checksum`.
+
+Reference a specific release in your `package.json`:
+
+```json
+{
+  "dependencies": {
+    "react-native-nitro-bg-timer": "https://github.com/rolandvar/react-native-nitro-bg-timer/releases/download/v0.1.0/react-native-nitro-bg-timer-0.1.0.tgz"
+  }
+}
+```
+
+Then run `yarn install` (or `npm install`) — the lockfile will record a
+stable checksum that all subsequent CI builds will match.
+
 ## Platform Configuration
 
 ### iOS
@@ -488,6 +512,66 @@ import { BackgroundTimer } from 'react-native-nitro-bg-timer'
 // The rest of your code should work the same
 ```
 
+## Releasing (maintainers)
+
+The package is published as a **GitHub Release asset** (a `.tgz` tarball
+attached to a tagged release) rather than to the npm registry. This
+gives downstream consumers a stable, checksum-consistent install path
+that works in `yarn install --immutable` CI environments.
+
+### Prerequisites
+
+- [GitHub CLI (`gh`)](https://cli.github.com/) installed and
+  authenticated with push access to this repo (`gh auth login`)
+- Clean working tree, no uncommitted changes
+- Currently on the `release/next` branch (the release branch)
+
+### Cutting a new release
+
+1. Bump `version` in `package.json` following semver — the tag name is
+   derived as `v${version}`
+2. Commit the bump and push to `release/next`
+3. Run:
+
+   ```bash
+   yarn release
+   ```
+
+The `yarn release` script (`scripts/release.js`) orchestrates the whole
+flow:
+
+1. Sanity checks: `gh` available, branch is `release/next`, working
+   tree clean, tag `v${version}` not already used (locally or on remote)
+2. Runs `eslint` and `tsc --noEmit` as pre-release verification
+   (bypass with `SKIP_VERIFY=1` if needed)
+3. Pushes the current branch to `origin`
+4. Cleans previous `lib/` and stale `*.tgz` artifacts
+5. Runs `npx bob build` to generate `lib/commonjs`, `lib/module`,
+   `lib/typescript`
+6. Runs `npm pack` to produce the tarball
+7. Creates and pushes the `v${version}` git tag
+8. Creates the GitHub Release via `gh release create` with the tarball
+   attached as an asset; release notes are auto-generated from the
+   commit log since the previous tag
+9. Prints the stable tarball URL for downstream `package.json` updates
+
+### Environment overrides
+
+| Variable       | Default                      | Purpose                                       |
+| -------------- | ---------------------------- | --------------------------------------------- |
+| `GH_BIN`       | `gh`                         | Path to the `gh` CLI binary (useful on Windows where `gh.exe` lives under `C:\Program Files\GitHub CLI\`) |
+| `GH_REPO`      | auto-detected from remote    | Override `owner/repo` if detection fails      |
+| `GIT_REMOTE`   | `origin`                     | Git remote to push branch and tag to          |
+| `GIT_BRANCH`   | `release/next`               | Branch expected to be current                 |
+| `SKIP_VERIFY`  | unset                        | Set to `1` to skip lint/typecheck pre-checks  |
+
+### After the release
+
+Copy the tarball URL printed at the end of `yarn release` and update
+each downstream consumer's `package.json` to point at the new version.
+Run `yarn install` in the consumer so its lockfile records the new
+checksum, then commit and push.
+
 ## Contributing
 
 See `CONTRIBUTING.md` for contribution workflow.
@@ -504,7 +588,8 @@ npx nitro-codegen
 - `ios/` — Native iOS implementation (Swift/Objective-C)
 - `src/` — TypeScript source code and exports
 - `nitrogen/` — Generated Nitro artifacts (auto-generated)
-- `lib/` — Compiled JavaScript output
+- `lib/` — Compiled JavaScript output (produced by `bob build`, not committed)
+- `scripts/` — Maintainer tooling (e.g. `release.js` invoked via `yarn release`)
 
 ## Acknowledgements
 

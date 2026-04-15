@@ -35,7 +35,8 @@
     "lint-ci": "eslint \"**/*.{js,ts,tsx}\" -f @jamesacarr/github-actions",
     "typescript": "tsc",
     "specs": "typescript && nitro-codegen --logLevel=\"debug\"",
-    "nitrogen": "nitrogen --logLevel=\"debug\""
+    "nitrogen": "nitrogen --logLevel=\"debug\"",
+    "release": "node scripts/release.js"
   },
   "keywords": [
     "react-native",
