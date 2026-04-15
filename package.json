@@ -2,9 +2,9 @@
   "name": "react-native-nitro-bg-timer",
   "version": "0.1.0",
   "description": "react-native-nitro-bg-timer is a react native package built with Nitro",
-  "main": "lib/index",
-  "module": "lib/index",
-  "types": "lib/index.d.ts",
+  "main": "lib/commonjs/index.js",
+  "module": "lib/module/index.js",
+  "types": "lib/typescript/index.d.ts",
   "react-native": "src/index",
   "source": "src/index",
   "files": [
