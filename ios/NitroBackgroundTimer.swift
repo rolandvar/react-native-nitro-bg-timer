@@ -406,60 +406,63 @@ class NitroBackgroundTimer: HybridNitroBackgroundTimerSpec {
   }
 
   func pauseGroup(group: String) throws -> Double {
-    var affected = 0
-    runOnMain { [weak self] in
-      guard let self else { return }
-      if Self.useCppEngine, let bridge = self.cppBridge {
-        affected = bridge.pause(group: group)
-        self.ensureSchedulerTickCpp()
+    // Must be sync — JS reads the affected count synchronously. Using async
+    // dispatch would return 0 every time the call originates off main.
+    let affected: Int = syncOnMain {
+      if Self.useCppEngine, let bridge = cppBridge {
+        let count = bridge.pause(group: group)
+        ensureSchedulerTickCpp()
+        return count
       } else {
-        for (tid, var task) in self.tasksById where task.group == group && !task.paused {
+        var count = 0
+        for (tid, var task) in tasksById where task.group == group && !task.paused {
           task.paused = true
-          self.tasksById[tid] = task
-          affected += 1
+          tasksById[tid] = task
+          count += 1
         }
-        self.ensureSchedulerTickSwift()
+        ensureSchedulerTickSwift()
+        return count
       }
     }
     return Double(affected)
   }
 
   func resumeGroup(group: String) throws -> Double {
-    var affected = 0
-    runOnMain { [weak self] in
-      guard let self else { return }
-      if Self.useCppEngine, let bridge = self.cppBridge {
+    let affected: Int = syncOnMain {
+      if Self.useCppEngine, let bridge = cppBridge {
         let nowMs = Int64(Date().timeIntervalSince1970 * 1000)
-        affected = bridge.resume(group: group, nowMs: nowMs)
-        self.ensureSchedulerTickCpp()
+        let count = bridge.resume(group: group, nowMs: nowMs)
+        ensureSchedulerTickCpp()
+        return count
       } else {
         let now = Date().timeIntervalSince1970 * 1000
-        for (tid, var task) in self.tasksById where task.group == group && task.paused {
+        var count = 0
+        for (tid, var task) in tasksById where task.group == group && task.paused {
           task.paused = false
           task.nextRunAtMs = max(task.nextRunAtMs, now + 1)
-          self.tasksById[tid] = task
-          affected += 1
+          tasksById[tid] = task
+          count += 1
         }
-        self.ensureSchedulerTickSwift()
+        ensureSchedulerTickSwift()
+        return count
       }
     }
     return Double(affected)
   }
 
   func cancelGroup(group: String) throws -> Double {
-    var removed = 0
-    runOnMain { [weak self] in
-      guard let self else { return }
-      if Self.useCppEngine, let bridge = self.cppBridge {
-        removed = bridge.cancel(group: group)
+    let removed: Int = syncOnMain {
+      if Self.useCppEngine, let bridge = cppBridge {
+        let count = bridge.cancel(group: group)
         let alive = Set(bridge.listActiveIds().map { $0.intValue })
-        self.cppCallbacks = self.cppCallbacks.filter { alive.contains($0.key) }
-        self.ensureSchedulerTickCpp()
+        cppCallbacks = cppCallbacks.filter { alive.contains($0.key) }
+        ensureSchedulerTickCpp()
+        return count
       } else {
-        let ids = self.tasksById.values.filter { $0.group == group }.map(\.id)
-        removed = ids.count
-        for tid in ids { self.tasksById.removeValue(forKey: tid) }
-        self.ensureSchedulerTickSwift()
+        let ids = tasksById.values.filter { $0.group == group }.map(\.id)
+        for tid in ids { tasksById.removeValue(forKey: tid) }
+        ensureSchedulerTickSwift()
+        return ids.count
       }
     }
     return Double(removed)
@@ -651,14 +654,15 @@ class NitroBackgroundTimer: HybridNitroBackgroundTimerSpec {
   }
 
   deinit {
+    // Capture state into locals BEFORE any async dispatch — once deinit returns,
+    // `self` is being deallocated and any closure referencing `self.*` would
+    // dereference freed memory.
     let releasingTask = bgTask
+    let timer = schedulerTimer
+    schedulerTimer = nil
 
     let cleanup = {
-      self.schedulerTimer?.invalidate()
-      self.schedulerTimer = nil
-      self.tasksById.removeAll()
-      self.cppCallbacks.removeAll()
-      self.cppBridge = nil
+      timer?.invalidate()
       if releasingTask != .invalid {
         UIApplication.shared.endBackgroundTask(releasingTask)
       }
@@ -669,5 +673,7 @@ class NitroBackgroundTimer: HybridNitroBackgroundTimerSpec {
     } else {
       DispatchQueue.main.async(execute: cleanup)
     }
+    // tasksById / cppCallbacks / cppBridge are owned by self and released
+    // automatically as part of deallocation — no manual cleanup needed.
   }
 }

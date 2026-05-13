@@ -247,8 +247,13 @@ function invokeWithRetry(
         attempt: nextAttempt,
         reason: error instanceof Error ? error.message : 'callback_error',
       })
+      // Use a fresh native id for the retry. Reusing `id` would REPLACE the
+      // original schedule on native — fine for one-shot timeouts but fatal for
+      // intervals (the running cadence is silently killed by the retry
+      // schedule). With a separate id, the original interval keeps firing.
+      const retryNativeId = nextId++
       NitroBackgroundTimer.schedule(
-        id,
+        retryNativeId,
         retryDelayMs,
         'timeout',
         Math.max(1, retryDelayMs || 1),
@@ -262,9 +267,15 @@ function invokeWithRetry(
         normalized.tagMaskHint ?? 0,
         normalized.policyProfile ?? 'balanced',
         () =>
-          invokeWithRetry(id, normalized, nextAttempt, () =>
-            runAndCleanup(id, normalized.kind)
-          )
+          invokeWithRetry(id, normalized, nextAttempt, () => {
+            // Re-invoke the original user callback. We deliberately don't go
+            // through runAndCleanup here — the original entry in
+            // advancedCallbacks must stay registered for an interval, and a
+            // one-shot timeout's original entry will be cleaned up by its
+            // own native fire (if any) or stays harmlessly until cancel.
+            const cb = advancedCallbacks.get(id)
+            if (cb) cb()
+          })
       )
       return
     }
@@ -285,6 +296,13 @@ export const BackgroundTimer = {
   ): ScheduledTaskHandle {
     const id = nextId++
     const normalized = normalizeOptions(options)
+    // Clear any prior cancellation entry for this token so a re-used token
+    // doesn't permanently blacklist new tasks. Without this, calling .cancel()
+    // on a handle and then scheduling a new one with the same token would
+    // produce a task that is instantly cancelled at first fire.
+    if (normalized.cancellationToken) {
+      cancelledTokens.delete(normalized.cancellationToken)
+    }
     advancedCallbacks.set(id, callback)
     emitLifecycle({
       name: 'scheduled',
