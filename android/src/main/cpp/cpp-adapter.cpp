@@ -5,7 +5,6 @@
 
 JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *)
 {
-  return facebook::jni::initialize(vm, []() {
-    margelo::nitro::backgroundtimer::registerAllNatives();
-  });
+  return facebook::jni::initialize(vm, []
+                                   { margelo::nitro::backgroundtimer::registerAllNatives(); });
 }

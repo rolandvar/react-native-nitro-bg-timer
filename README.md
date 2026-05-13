@@ -1,31 +1,70 @@
-# react-native-nitro-bg-timer
+# ⚡ react-native-nitro-bg-timer
 
-Native background timer for React Native built with Nitro Modules.
+<p align="center">
+  <b>Production-grade background-safe timers for React Native.</b><br/>
+  Powered by Nitro Modules with a shared C++ scheduler core on Android and iOS.
+</p>
 
-## Overview
+<p align="center">
+  <a href="https://www.npmjs.com/package/react-native-nitro-bg-timer"><img alt="npm version" src="https://img.shields.io/npm/v/react-native-nitro-bg-timer?color=2ea44f"></a>
+  <a href="https://www.npmjs.com/package/react-native-nitro-bg-timer"><img alt="npm downloads" src="https://img.shields.io/npm/dm/react-native-nitro-bg-timer?color=blue"></a>
+  <img alt="platform" src="https://img.shields.io/badge/platform-iOS%20%7C%20Android-8A2BE2">
+  <img alt="native stack" src="https://img.shields.io/badge/native-C%2B%2B%20%7C%20Swift%20%7C%20Kotlin-orange">
+  <img alt="license" src="https://img.shields.io/badge/license-MIT-brightgreen">
+</p>
 
-This module provides high-performance background timer functionality for React Native applications. It allows you to run timers (setTimeout, setInterval) that continue to work even when the app is in the background, built with Nitro Modules for optimal native performance.
+---
 
-## Features
+## 🚀 Release Status
 
-- ⚡ High-performance native implementation using Nitro Modules
-- 🎯 Background-safe timers (setTimeout, clearTimeout, setInterval, clearInterval)
-- 🔄 Continues running when app is backgrounded
-- 📱 Cross-platform support (iOS & Android)
-- 🚀 Zero-bridge overhead with direct native calls
-- 🛡️ Memory-safe with automatic cleanup
+This package is being finalized for the **official 1.x stable line**.
 
-## Requirements
+- `0.x`: rapid iteration and compatibility hardening
+- `1.x`: stable public contract
+- SemVer policy: breaking changes only in major releases
 
-- React Native >= 0.76
-- Node >= 18
-- `react-native-nitro-modules` must be installed (Nitro runtime)
+See `docs/RELEASE_GOVERNANCE.md` and `docs/FEATURE_UPGRADE_STATUS.md` for release gates and live status.
 
-## Installation
+---
+
+## ✨ Why Teams Choose It
+
+- 🔥 Native-backed timers through Nitro Modules
+- 🧠 Shared C++ scheduler core for cross-platform consistency
+- 🎯 Legacy API + scheduler-first API in one package
+- 🧩 Group controls and drift policies
+- 📊 Stats and lifecycle events for production observability
+- 🛡️ Retry/token/profile metadata flow with validation safeguards
+
+## C++ and Native Performance Proof
+
+This module runs critical scheduling paths in native code (C++ core + Swift/Kotlin adapters) instead of keeping hot scheduling loops in JavaScript.
+
+- Typed bridge overhead improvement: about `99%` faster than JSON bridge path (`benchmark:bridge`).
+- Native C++ core load benchmark: around `15ms` for `50,000` tasks on recent CI runs (`benchmark:core-native`).
+- Stress smoke signal: `p95 ~ 3.5ms`, heap delta about `4.6MB` (`stress:smoke`).
+
+These numbers come from the current release verification lane (`npm run verify:release`) and are intended as practical indicators, not synthetic peak claims.
+
+---
+
+## 📦 Requirements
+
+- React Native `>= 0.76`
+- Node.js `>= 18`
+- `react-native-nitro-modules` `>= 0.35.x`
+
+---
+
+## 🛠 Installation
 
 ```bash
 npm install react-native-nitro-bg-timer react-native-nitro-modules
-# or
+```
+
+or
+
+```bash
 yarn add react-native-nitro-bg-timer react-native-nitro-modules
 ```
 
@@ -45,7 +84,7 @@ Reference a specific release in your `package.json`:
 ```json
 {
   "dependencies": {
-    "react-native-nitro-bg-timer": "https://github.com/rolandvar/react-native-nitro-bg-timer/releases/download/v0.1.0/react-native-nitro-bg-timer-0.1.0.tgz"
+    "react-native-nitro-bg-timer": "https://github.com/rolandvar/react-native-nitro-bg-timer/releases/download/v1.0.0.0/react-native-nitro-bg-timer-1.0.0.0.tgz"
   }
 }
 ```
@@ -53,483 +92,201 @@ Reference a specific release in your `package.json`:
 Then run `yarn install` (or `npm install`) — the lockfile will record a
 stable checksum that all subsequent CI builds will match.
 
-## Platform Configuration
+---
+
+## 🧭 Platform Setup
 
 ### iOS
 
-Add background processing capability to your `Info.plist`:
+- Uses `UIApplication.beginBackgroundTask` internally
+- No runtime permission prompt
+- `BGTaskScheduler` is not required by default
 
-```xml
-<key>UIBackgroundModes</key>
-<array>
-    <string>background-processing</string>
-    <string>background-fetch</string>
-</array>
-```
-
-For background tasks to work properly, you may also need to register background task identifiers in your `Info.plist`:
-
-```xml
-<key>BGTaskSchedulerPermittedIdentifiers</key>
-<array>
-    <string>com.yourapp.background-timer</string>
-</array>
+```bash
+cd ios && pod install
 ```
 
 ### Android
 
-Add the following permissions to your `android/app/src/main/AndroidManifest.xml`:
+This library uses `PARTIAL_WAKE_LOCK` while timers are active.
 
 ```xml
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- Allow the app to run in background -->
-    <uses-permission android:name="android.permission.WAKE_LOCK" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    
-    <application
-        android:name=".MainApplication"
-        android:allowBackup="false"
-        android:theme="@style/AppTheme">
-            
-        <activity
-            android:name=".MainActivity"
-            android:exported="true"
-            android:theme="@style/LaunchTheme">
-            <!-- Your existing activity configuration -->
-        </activity>
-    </application>
-</manifest>
+<uses-permission android:name="android.permission.WAKE_LOCK" />
 ```
 
-## Quick Usage
+`FOREGROUND_SERVICE` is not required unless your app uses foreground services for other workloads.
+
+---
+
+## ⚡ Quick Start
 
 ```ts
 import { BackgroundTimer } from 'react-native-nitro-bg-timer'
 
-// setTimeout - runs once after delay
 const timeoutId = BackgroundTimer.setTimeout(() => {
-  console.log('This runs after 5 seconds, even in background!')
+  console.log('Runs once after 5 seconds')
 }, 5000)
 
-// Clear timeout if needed
-BackgroundTimer.clearTimeout(timeoutId)
-
-// setInterval - runs repeatedly
 const intervalId = BackgroundTimer.setInterval(() => {
-  console.log('This runs every 2 seconds, even in background!')
+  console.log('Runs every 2 seconds')
 }, 2000)
 
-// Clear interval when done
+BackgroundTimer.clearTimeout(timeoutId)
 BackgroundTimer.clearInterval(intervalId)
 ```
 
-## API Reference
+---
 
-### BackgroundTimer
-
-The main API object providing background-safe timer functionality.
-
-#### `setTimeout(callback: () => void, duration: number): number`
-
-Creates a timer that calls the callback function after the specified duration.
-
-- **callback**: Function to execute after the timer expires
-- **duration**: Time in milliseconds to wait before executing the callback
-- **Returns**: Timer ID that can be used with `clearTimeout`
+## 🧠 Scheduler API (1.x Preferred)
 
 ```ts
-const id = BackgroundTimer.setTimeout(() => {
-  console.log('Timer executed!')
-}, 3000)
-```
+import { BackgroundTimer, BackgroundScheduler } from 'react-native-nitro-bg-timer'
 
-#### `clearTimeout(id: number): void`
-
-Cancels a timeout timer created with `setTimeout`.
-
-- **id**: Timer ID returned from `setTimeout`
-
-```ts
-const id = BackgroundTimer.setTimeout(() => {
-  console.log('This will not run')
-}, 5000)
-
-BackgroundTimer.clearTimeout(id) // Cancel the timer
-```
-
-#### `setInterval(callback: () => void, interval: number): number`
-
-Creates a timer that repeatedly calls the callback function at specified intervals.
-
-- **callback**: Function to execute on each interval
-- **interval**: Time in milliseconds between each execution
-- **Returns**: Timer ID that can be used with `clearInterval`
-
-```ts
-const id = BackgroundTimer.setInterval(() => {
-  console.log('Repeating timer!')
-}, 1000) // Runs every second
-```
-
-#### `clearInterval(id: number): void`
-
-Cancels an interval timer created with `setInterval`.
-
-- **id**: Timer ID returned from `setInterval`
-
-```ts
-const id = BackgroundTimer.setInterval(() => {
-  console.log('This will stop after 10 seconds')
-}, 1000)
-
-// Stop the interval after 10 seconds
-BackgroundTimer.setTimeout(() => {
-  BackgroundTimer.clearInterval(id)
-}, 10000)
-```
-
-## Real-world Examples
-
-### Basic Timer Usage
-
-```ts
-import React, { useEffect, useState } from 'react'
-import { View, Text, Button } from 'react-native'
-import { BackgroundTimer } from 'react-native-nitro-bg-timer'
-
-const TimerExample = () => {
-  const [seconds, setSeconds] = useState(0)
-  const [intervalId, setIntervalId] = useState<number | null>(null)
-
-  const startTimer = () => {
-    const id = BackgroundTimer.setInterval(() => {
-      setSeconds(prev => prev + 1)
-    }, 1000)
-    setIntervalId(id)
-  }
-
-  const stopTimer = () => {
-    if (intervalId) {
-      BackgroundTimer.clearInterval(intervalId)
-      setIntervalId(null)
-    }
-  }
-
-  const resetTimer = () => {
-    stopTimer()
-    setSeconds(0)
-  }
-
-  useEffect(() => {
-    return () => {
-      if (intervalId) {
-        BackgroundTimer.clearInterval(intervalId)
-      }
-    }
-  }, [intervalId])
-
-  return (
-    <View style={{ padding: 20 }}>
-      <Text style={{ fontSize: 24, textAlign: 'center' }}>
-        Timer: {seconds}s
-      </Text>
-      <Button title="Start" onPress={startTimer} disabled={!!intervalId} />
-      <Button title="Stop" onPress={stopTimer} disabled={!intervalId} />
-      <Button title="Reset" onPress={resetTimer} />
-    </View>
-  )
-}
-```
-
-### Background Task Simulation
-
-```ts
-import { BackgroundTimer } from 'react-native-nitro-bg-timer'
-
-class BackgroundTaskManager {
-  private taskId: number | null = null
-
-  startPeriodicSync(interval: number = 30000) { // 30 seconds
-    this.taskId = BackgroundTimer.setInterval(() => {
-      this.performBackgroundSync()
-    }, interval)
-  }
-
-  stopPeriodicSync() {
-    if (this.taskId) {
-      BackgroundTimer.clearInterval(this.taskId)
-      this.taskId = null
-    }
-  }
-
-  private async performBackgroundSync() {
-    try {
-      // Simulate API call or data processing
-      console.log('Performing background sync...', new Date().toISOString())
-      
-      // Your background logic here
-      // await syncDataWithServer()
-      // await processLocalData()
-      
-    } catch (error) {
-      console.error('Background sync failed:', error)
-    }
-  }
-
-  scheduleDelayedTask(delay: number, task: () => void) {
-    return BackgroundTimer.setTimeout(task, delay)
-  }
-}
-
-// Usage
-const taskManager = new BackgroundTaskManager()
-
-// Start periodic background sync
-taskManager.startPeriodicSync(60000) // Every minute
-
-// Schedule a one-time delayed task
-taskManager.scheduleDelayedTask(5000, () => {
-  console.log('Delayed task executed!')
+const handle = BackgroundTimer.schedule(() => {
+  console.log('Sync fired')
+}, {
+  kind: 'interval',
+  intervalMs: 1000,
+  group: 'sync',
+  driftPolicy: 'coalesce',
+  retryMaxAttempts: 3,
+  retryInitialBackoffMs: 250,
+  cancellationToken: 'sync-job',
+  policyProfile: 'balanced',
+  tags: ['sync', 'foreground'],
 })
+
+BackgroundTimer.pauseGroup('sync')
+BackgroundTimer.resumeGroup('sync')
+
+const cronHandle = BackgroundScheduler.scheduleCron(() => {
+  console.log('Every 2 minutes')
+}, '*/2 * * * *')
+
+handle.cancel()
+cronHandle.cancel()
 ```
 
-### React Hook for Background Timers
+---
 
-```ts
-import { useEffect, useRef, useCallback } from 'react'
-import { BackgroundTimer } from 'react-native-nitro-bg-timer'
+## 📚 API Overview
 
-export const useBackgroundTimer = (
-  callback: () => void,
-  interval: number,
-  immediate: boolean = false
-) => {
-  const intervalRef = useRef<number | null>(null)
-  const savedCallback = useRef(callback)
+### `BackgroundTimer`
 
-  // Remember the latest callback
-  useEffect(() => {
-    savedCallback.current = callback
-  }, [callback])
+- `setTimeout(callback, durationMs): number`
+- `clearTimeout(id): void`
+- `setInterval(callback, intervalMs): number`
+- `clearInterval(id): void`
+- `schedule(callback, options): ScheduledTaskHandle`
+- `pauseGroup(group): number`
+- `resumeGroup(group): number`
+- `cancelGroup(group): number`
+- `listActiveTimerIds(): number[]`
+- `getStats(): SchedulerStats`
+- `onStats(listener): () => void`
+- `onEvent(listener): () => void`
+- `getPersistWireJson(): string`
+- `restorePersistWireJson(wireJson): void`
 
-  const start = useCallback(() => {
-    if (intervalRef.current) return // Already running
+### `BackgroundScheduler`
 
-    if (immediate) {
-      savedCallback.current()
-    }
+- `scheduleAt(callback, runAtMs, options?)`
+- `scheduleInterval(callback, intervalMs, options?)`
+- `scheduleCron(callback, expression, options?)`
 
-    intervalRef.current = BackgroundTimer.setInterval(() => {
-      savedCallback.current()
-    }, interval)
-  }, [interval, immediate])
+---
 
-  const stop = useCallback(() => {
-    if (intervalRef.current) {
-      BackgroundTimer.clearInterval(intervalRef.current)
-      intervalRef.current = null
-    }
-  }, [])
+## 🔄 Migration Guidance
 
-  const restart = useCallback(() => {
-    stop()
-    start()
-  }, [stop, start])
+- Existing timer usage (`setTimeout`, `setInterval`) remains supported.
+- New code should prefer `BackgroundTimer.schedule(...)` and `BackgroundScheduler.*`.
+- For migration details, see `docs/MIGRATION_V2.md`.
 
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      stop()
-    }
-  }, [stop])
+---
 
-  return { start, stop, restart, isRunning: !!intervalRef.current }
-}
+## 🧪 Verification & Benchmarks
 
-// Usage in component
-const MyComponent = () => {
-  const { start, stop, isRunning } = useBackgroundTimer(
-    () => console.log('Background task executed!'),
-    5000, // 5 seconds
-    true  // Run immediately
-  )
+- `npm run test`
+- `npm run benchmark:node`
+- `npm run benchmark:bridge`
+- `npm run benchmark:core-native`
+- `npm run stress:smoke`
+- `npm run stress:soak`
+- `npm run benchmark:native-smoke`
+- `npm run verify:release`
 
-  return (
-    <View>
-      <Button 
-        title={isRunning ? "Stop Timer" : "Start Timer"} 
-        onPress={isRunning ? stop : start} 
-      />
-    </View>
-  )
-}
+`npm run verify:release` is the recommended pre-publish gate.
+
+---
+
+## 📊 Reliability Notes
+
+- iOS execution remains bounded by OS lifecycle policy.
+- Android behavior may vary under OEM battery optimization and Doze.
+- For durable long-running workloads, combine with platform job schedulers.
+
+---
+
+## 🔗 Documentation
+
+Core docs:
+
+- `docs/FEATURE_UPGRADE_STATUS.md`
+- `docs/RELEASE_GOVERNANCE.md`
+- `docs/MIGRATION_V2.md`
+- `docs/OBSERVABILITY_EVENT_CONTRACT.md`
+- `docs/NATIVE_BENCH_THRESHOLDS.md`
+- `docs/RELIABILITY_LAB_SCORECARD.md`
+- `docs/PERSISTENCE.md`
+- `docs/PLATFORM_LIFECYCLE_MATRIX.md`
+
+---
+
+## 🤝 Contributing
+
+See `CONTRIBUTING.md` for contribution workflow.
+
+When changing Nitro specs (`src/specs/*.nitro.ts`), regenerate bindings:
+
+```bash
+npx nitrogen
 ```
 
-## Best Practices
+Before opening PRs:
 
-### Memory Management
-
-Always clean up timers to prevent memory leaks:
-
-```ts
-useEffect(() => {
-  const timers: number[] = []
-
-  // Store timer IDs
-  timers.push(BackgroundTimer.setInterval(() => {
-    // Your logic
-  }, 1000))
-
-  timers.push(BackgroundTimer.setTimeout(() => {
-    // Your logic
-  }, 5000))
-
-  // Cleanup function
-  return () => {
-    timers.forEach(id => {
-      BackgroundTimer.clearInterval(id)
-      BackgroundTimer.clearTimeout(id)
-    })
-  }
-}, [])
+```bash
+npm run verify:release
 ```
 
-### Performance Considerations
+### Project structure
 
-- Use appropriate intervals - avoid too frequent executions
-- Consider batching operations in timer callbacks
-- Be mindful of battery usage on mobile devices
+- `android/` — Native Android implementation (Kotlin/Java)
+- `ios/` — Native iOS implementation (Swift/Objective-C)
+- `cpp/` — Shared C++ scheduler core
+- `src/` — TypeScript source code and exports
+- `nitrogen/` — Generated Nitro artifacts (auto-generated)
+- `lib/` — Compiled JavaScript output (produced by `bob build`, not committed)
+- `scripts/` — Maintainer tooling (e.g. `release.js` invoked via `yarn release`)
 
-```ts
-// Good: Batch multiple operations
-BackgroundTimer.setInterval(() => {
-  performDataSync()
-  updateLocalCache()
-  checkNotifications()
-}, 30000) // Every 30 seconds
+---
 
-// Avoid: Multiple frequent timers
-// BackgroundTimer.setInterval(performDataSync, 5000)
-// BackgroundTimer.setInterval(updateLocalCache, 3000)
-// BackgroundTimer.setInterval(checkNotifications, 7000)
-```
+## 📦 Releasing (fork maintainers)
 
-### Error Handling
-
-```ts
-BackgroundTimer.setInterval(() => {
-  try {
-    performRiskyOperation()
-  } catch (error) {
-    console.error('Timer callback failed:', error)
-    // Handle error appropriately
-  }
-}, 10000)
-```
-
-## Platform Support
-
-### Android Implementation Details
-
-- ✅ Full support with foreground service
-- ✅ Battery optimization handling
-- ✅ Doze mode compatibility
-- ✅ Works with Android 12+ background restrictions
-
-### iOS Implementation Details
-
-- ✅ Full support with background task API
-- ✅ Background app refresh integration
-- ✅ iOS 13+ background processing
-- ✅ Automatic task expiration handling
-
-## Troubleshooting
-
-### Common Issues
-
-### Issue Resolution
-
-#### Timers stop working in background (Android)
-
-- Ensure proper permissions are added to AndroidManifest.xml
-- Request battery optimization exemption for your app
-- Check if foreground service is properly configured
-
-#### Timers not firing on iOS
-
-- Verify background modes are enabled in Info.plist
-- Ensure background app refresh is enabled for your app
-- Check iOS background task time limits
-
-#### Memory leaks
-
-- Always clear timers when components unmount
-- Use cleanup functions in useEffect hooks
-- Monitor timer IDs and clean them appropriately
-
-### Debug Mode
-
-You can enable debug logging to troubleshoot timer issues:
-
-```ts
-// Enable debug mode (if supported by the native implementation)
-if (__DEV__) {
-  console.log('Timer created with ID:', timerId)
-}
-```
-
-## Migration Guide
-
-### From JavaScript timers
-
-```ts
-// Before (standard JavaScript timers)
-const timeoutId = setTimeout(() => {
-  console.log('This might not work in background')
-}, 5000)
-
-const intervalId = setInterval(() => {
-  console.log('This will pause in background')
-}, 1000)
-
-// After (BackgroundTimer)
-const timeoutId = BackgroundTimer.setTimeout(() => {
-  console.log('This works in background!')
-}, 5000)
-
-const intervalId = BackgroundTimer.setInterval(() => {
-  console.log('This continues in background!')
-}, 1000)
-```
-
-### From other background timer libraries
-
-The API is designed to be a drop-in replacement for most background timer libraries:
-
-```ts
-// Just replace the import
-import { BackgroundTimer } from 'react-native-nitro-bg-timer'
-// The rest of your code should work the same
-```
-
-## Releasing (maintainers)
-
-The package is published as a **GitHub Release asset** (a `.tgz` tarball
-attached to a tagged release) rather than to the npm registry. This
-gives downstream consumers a stable, checksum-consistent install path
-that works in `yarn install --immutable` CI environments.
+This fork publishes versioned tarballs as **GitHub Release assets**
+attached to tags on this repository, so downstream consumers can pin to
+a stable, checksum-consistent install URL that works under
+`yarn install --immutable` in CI.
 
 ### Prerequisites
 
 - [GitHub CLI (`gh`)](https://cli.github.com/) installed and
   authenticated with push access to this repo (`gh auth login`)
 - Clean working tree, no uncommitted changes
-- Currently on the `release/next` branch (the release branch)
+- Currently on the `release/next` branch
 
 ### Cutting a new release
 
-1. Bump `version` in `package.json` following semver — the tag name is
-   derived as `v${version}`
+1. Bump `version` in `package.json` (tag name is derived as `v${version}`)
 2. Commit the bump and push to `release/next`
 3. Run:
 
@@ -537,72 +294,34 @@ that works in `yarn install --immutable` CI environments.
    yarn release
    ```
 
-The `yarn release` script (`scripts/release.js`) orchestrates the whole
-flow:
-
-1. Sanity checks: `gh` available, branch is `release/next`, working
-   tree clean, tag `v${version}` not already used (locally or on remote)
-2. Runs `eslint` and `tsc --noEmit` as pre-release verification
-   (bypass with `SKIP_VERIFY=1` if needed)
-3. Pushes the current branch to `origin`
-4. Cleans previous `lib/` and stale `*.tgz` artifacts
-5. Runs `npx bob build` to generate `lib/commonjs`, `lib/module`,
-   `lib/typescript`
-6. Runs `npm pack` to produce the tarball
-7. Creates and pushes the `v${version}` git tag
-8. Creates the GitHub Release via `gh release create` with the tarball
-   attached as an asset; release notes are auto-generated from the
-   commit log since the previous tag
-9. Prints the stable tarball URL for downstream `package.json` updates
+The `scripts/release.js` orchestrator runs sanity checks, builds with
+`bob build`, packs the tarball, creates and pushes the `v${version}`
+git tag, and creates the GitHub Release with the tarball attached. It
+prints the stable asset URL for downstream `package.json` updates.
 
 ### Environment overrides
 
-| Variable       | Default                      | Purpose                                       |
-| -------------- | ---------------------------- | --------------------------------------------- |
-| `GH_BIN`       | `gh`                         | Path to the `gh` CLI binary (useful on Windows where `gh.exe` lives under `C:\Program Files\GitHub CLI\`) |
-| `GH_REPO`      | auto-detected from remote    | Override `owner/repo` if detection fails      |
-| `GIT_REMOTE`   | `origin`                     | Git remote to push branch and tag to          |
-| `GIT_BRANCH`   | `release/next`               | Branch expected to be current                 |
-| `SKIP_VERIFY`  | unset                        | Set to `1` to skip lint/typecheck pre-checks  |
+| Variable      | Default                   | Purpose                                          |
+| ------------- | ------------------------- | ------------------------------------------------ |
+| `GH_BIN`      | `gh`                      | Path to the `gh` CLI binary                      |
+| `GH_REPO`     | auto-detected from remote | Override `owner/repo` if detection fails         |
+| `GIT_REMOTE`  | `origin`                  | Git remote to push branch and tag to             |
+| `GIT_BRANCH`  | `release/next`            | Branch expected to be current                    |
+| `SKIP_VERIFY` | unset                     | Set to `1` to skip lint/typecheck pre-checks     |
 
-### After the release
-
-Copy the tarball URL printed at the end of `yarn release` and update
-each downstream consumer's `package.json` to point at the new version.
-Run `yarn install` in the consumer so its lockfile records the new
-checksum, then commit and push.
-
-## Contributing
-
-See `CONTRIBUTING.md` for contribution workflow.
-
-When updating spec files in `src/specs/*.nitro.ts`, regenerate Nitro artifacts:
-
-```bash
-npx nitro-codegen
-```
-
-## Project Structure
-
-- `android/` — Native Android implementation (Kotlin/Java)
-- `ios/` — Native iOS implementation (Swift/Objective-C)
-- `src/` — TypeScript source code and exports
-- `nitrogen/` — Generated Nitro artifacts (auto-generated)
-- `lib/` — Compiled JavaScript output (produced by `bob build`, not committed)
-- `scripts/` — Maintainer tooling (e.g. `release.js` invoked via `yarn release`)
+---
 
 ## Acknowledgements
 
-Special thanks to the following projects that inspired this library:
+Special thanks to the following open-source projects which inspired and supported the development of this library:
 
-- [mrousavy/nitro](https://github.com/mrousavy/nitro) – Nitro Modules architecture
-- [react-native-background-timer](https://github.com/ocetnik/react-native-background-timer) – Background timer concepts
-- [react-native-background-job](https://github.com/vikeri/react-native-background-job) – Background processing patterns
+- [mrousavy/nitro](https://github.com/mrousavy/nitro) – for the Nitro Modules architecture and tooling
 
-## License
+## 📄 License
 
 MIT © [Thành Công](https://github.com/tconns)
-          
+
+
 <a href="https://www.buymeacoffee.com/tconns94" target="_blank">
   <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" width="200"/>
 </a>
