@@ -21,11 +21,11 @@ namespace margelo::nitro::backgroundtimer {
   class JHybridNitroBackgroundTimerSpec: public virtual HybridNitroBackgroundTimerSpec, public virtual JHybridObject {
   public:
     struct JavaPart: public jni::JavaClass<JavaPart, JHybridObject::JavaPart> {
-      static auto constexpr kJavaDescriptor = "Lcom/margelo/nitro/backgroundtimer/HybridNitroBackgroundTimerSpec;";
+      static constexpr auto kJavaDescriptor = "Lcom/margelo/nitro/backgroundtimer/HybridNitroBackgroundTimerSpec;";
       std::shared_ptr<JHybridNitroBackgroundTimerSpec> getJHybridNitroBackgroundTimerSpec();
     };
     struct CxxPart: public jni::HybridClass<CxxPart, JHybridObject::CxxPart> {
-      static auto constexpr kJavaDescriptor = "Lcom/margelo/nitro/backgroundtimer/HybridNitroBackgroundTimerSpec$CxxPart;";
+      static constexpr auto kJavaDescriptor = "Lcom/margelo/nitro/backgroundtimer/HybridNitroBackgroundTimerSpec$CxxPart;";
       static jni::local_ref<jhybriddata> initHybrid(jni::alias_ref<jhybridobject> jThis);
       static void registerNatives();
       using HybridBase::HybridBase;
