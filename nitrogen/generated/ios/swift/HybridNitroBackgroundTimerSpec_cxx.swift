@@ -125,6 +125,123 @@ open class HybridNitroBackgroundTimerSpec_cxx {
 
   // Methods
   @inline(__always)
+  public final func schedule(id: Double, delayMs: Double, kind: std.string, intervalMs: Double, group: std.string, driftPolicy: std.string, maxRuns: Double, correlationToken: Double, retryMaxAttempts: Double, retryInitialBackoffMs: Double, cancellationToken: std.string, tagMask: Double, policyProfile: std.string, callback: bridge.Func_void_double) -> bridge.Result_double_ {
+    do {
+      let __result = try self.__implementation.schedule(id: id, delayMs: delayMs, kind: String(kind), intervalMs: intervalMs, group: String(group), driftPolicy: String(driftPolicy), maxRuns: maxRuns, correlationToken: correlationToken, retryMaxAttempts: retryMaxAttempts, retryInitialBackoffMs: retryInitialBackoffMs, cancellationToken: String(cancellationToken), tagMask: tagMask, policyProfile: String(policyProfile), callback: { () -> (Double) -> Void in
+        let __wrappedFunction = bridge.wrap_Func_void_double(callback)
+        return { (__id: Double) -> Void in
+          __wrappedFunction.call(__id)
+        }
+      }())
+      let __resultCpp = __result
+      return bridge.create_Result_double_(__resultCpp)
+    } catch (let __error) {
+      let __exceptionPtr = __error.toCpp()
+      return bridge.create_Result_double_(__exceptionPtr)
+    }
+  }
+  
+  @inline(__always)
+  public final func cancel(id: Double) -> bridge.Result_void_ {
+    do {
+      try self.__implementation.cancel(id: id)
+      return bridge.create_Result_void_()
+    } catch (let __error) {
+      let __exceptionPtr = __error.toCpp()
+      return bridge.create_Result_void_(__exceptionPtr)
+    }
+  }
+  
+  @inline(__always)
+  public final func pauseGroup(group: std.string) -> bridge.Result_double_ {
+    do {
+      let __result = try self.__implementation.pauseGroup(group: String(group))
+      let __resultCpp = __result
+      return bridge.create_Result_double_(__resultCpp)
+    } catch (let __error) {
+      let __exceptionPtr = __error.toCpp()
+      return bridge.create_Result_double_(__exceptionPtr)
+    }
+  }
+  
+  @inline(__always)
+  public final func resumeGroup(group: std.string) -> bridge.Result_double_ {
+    do {
+      let __result = try self.__implementation.resumeGroup(group: String(group))
+      let __resultCpp = __result
+      return bridge.create_Result_double_(__resultCpp)
+    } catch (let __error) {
+      let __exceptionPtr = __error.toCpp()
+      return bridge.create_Result_double_(__exceptionPtr)
+    }
+  }
+  
+  @inline(__always)
+  public final func cancelGroup(group: std.string) -> bridge.Result_double_ {
+    do {
+      let __result = try self.__implementation.cancelGroup(group: String(group))
+      let __resultCpp = __result
+      return bridge.create_Result_double_(__resultCpp)
+    } catch (let __error) {
+      let __exceptionPtr = __error.toCpp()
+      return bridge.create_Result_double_(__exceptionPtr)
+    }
+  }
+  
+  @inline(__always)
+  public final func listActiveTimerIds() -> bridge.Result_std__vector_double__ {
+    do {
+      let __result = try self.__implementation.listActiveTimerIds()
+      let __resultCpp = { () -> bridge.std__vector_double_ in
+        var __vector = bridge.create_std__vector_double_(__result.count)
+        for __item in __result {
+          __vector.push_back(__item)
+        }
+        return __vector
+      }()
+      return bridge.create_Result_std__vector_double__(__resultCpp)
+    } catch (let __error) {
+      let __exceptionPtr = __error.toCpp()
+      return bridge.create_Result_std__vector_double__(__exceptionPtr)
+    }
+  }
+  
+  @inline(__always)
+  public final func getStatsJson() -> bridge.Result_std__string_ {
+    do {
+      let __result = try self.__implementation.getStatsJson()
+      let __resultCpp = std.string(__result)
+      return bridge.create_Result_std__string_(__resultCpp)
+    } catch (let __error) {
+      let __exceptionPtr = __error.toCpp()
+      return bridge.create_Result_std__string_(__exceptionPtr)
+    }
+  }
+  
+  @inline(__always)
+  public final func getPersistWireJson() -> bridge.Result_std__string_ {
+    do {
+      let __result = try self.__implementation.getPersistWireJson()
+      let __resultCpp = std.string(__result)
+      return bridge.create_Result_std__string_(__resultCpp)
+    } catch (let __error) {
+      let __exceptionPtr = __error.toCpp()
+      return bridge.create_Result_std__string_(__exceptionPtr)
+    }
+  }
+  
+  @inline(__always)
+  public final func restorePersistWireJson(wireJson: std.string) -> bridge.Result_void_ {
+    do {
+      try self.__implementation.restorePersistWireJson(wireJson: String(wireJson))
+      return bridge.create_Result_void_()
+    } catch (let __error) {
+      let __exceptionPtr = __error.toCpp()
+      return bridge.create_Result_void_(__exceptionPtr)
+    }
+  }
+  
+  @inline(__always)
   public final func setTimeout(id: Double, duration: Double, callback: bridge.Func_void_double) -> bridge.Result_double_ {
     do {
       let __result = try self.__implementation.setTimeout(id: id, duration: duration, callback: { () -> (Double) -> Void in

@@ -84,7 +84,7 @@ Reference a specific release in your `package.json`:
 ```json
 {
   "dependencies": {
-    "react-native-nitro-bg-timer": "https://github.com/rolandvar/react-native-nitro-bg-timer/releases/download/v1.0.0.0/react-native-nitro-bg-timer-1.0.0.0.tgz"
+    "react-native-nitro-bg-timer": "https://github.com/rolandvar/react-native-nitro-bg-timer/releases/download/v1.0.0-fork.0/react-native-nitro-bg-timer-1.0.0-fork.0.tgz"
   }
 }
 ```

@@ -15,7 +15,9 @@
 
 
 
+#include <string>
 #include <functional>
+#include <vector>
 
 namespace margelo::nitro::backgroundtimer {
 
@@ -48,6 +50,15 @@ namespace margelo::nitro::backgroundtimer {
 
     public:
       // Methods
+      virtual double schedule(double id, double delayMs, const std::string& kind, double intervalMs, const std::string& group, const std::string& driftPolicy, double maxRuns, double correlationToken, double retryMaxAttempts, double retryInitialBackoffMs, const std::string& cancellationToken, double tagMask, const std::string& policyProfile, const std::function<void(double /* id */)>& callback) = 0;
+      virtual void cancel(double id) = 0;
+      virtual double pauseGroup(const std::string& group) = 0;
+      virtual double resumeGroup(const std::string& group) = 0;
+      virtual double cancelGroup(const std::string& group) = 0;
+      virtual std::vector<double> listActiveTimerIds() = 0;
+      virtual std::string getStatsJson() = 0;
+      virtual std::string getPersistWireJson() = 0;
+      virtual void restorePersistWireJson(const std::string& wireJson) = 0;
       virtual double setTimeout(double id, double duration, const std::function<void(double /* id */)>& callback) = 0;
       virtual void clearTimeout(double id) = 0;
       virtual double setInterval(double id, double interval, const std::function<void(double /* id */)>& callback) = 0;

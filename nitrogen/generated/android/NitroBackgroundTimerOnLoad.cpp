@@ -17,7 +17,6 @@
 
 #include "JHybridNitroBackgroundTimerSpec.hpp"
 #include "JFunc_void_double.hpp"
-#include <NitroModules/DefaultConstructableObject.hpp>
 
 namespace margelo::nitro::backgroundtimer {
 
@@ -27,14 +26,7 @@ int initialize(JavaVM* vm) {
   });
 }
 
-struct JHybridNitroBackgroundTimerSpecImpl: public jni::JavaClass<JHybridNitroBackgroundTimerSpecImpl, JHybridNitroBackgroundTimerSpec::JavaPart> {
-  static auto constexpr kJavaDescriptor = "Lcom/margelo/nitro/backgroundtimer/NitroBackgroundTimer;";
-  static std::shared_ptr<JHybridNitroBackgroundTimerSpec> create() {
-    static auto constructorFn = javaClassStatic()->getConstructor<JHybridNitroBackgroundTimerSpecImpl::javaobject()>();
-    jni::local_ref<JHybridNitroBackgroundTimerSpec::JavaPart> javaPart = javaClassStatic()->newObject(constructorFn);
-    return javaPart->getJHybridNitroBackgroundTimerSpec();
-  }
-};
+
 
 void registerAllNatives() {
   using namespace margelo::nitro;
@@ -45,12 +37,7 @@ void registerAllNatives() {
   margelo::nitro::backgroundtimer::JFunc_void_double_cxx::registerNatives();
 
   // Register Nitro Hybrid Objects
-  HybridObjectRegistry::registerHybridObjectConstructor(
-    "NitroBackgroundTimer",
-    []() -> std::shared_ptr<HybridObject> {
-      return JHybridNitroBackgroundTimerSpecImpl::create();
-    }
-  );
+  
 }
 
 } // namespace margelo::nitro::backgroundtimer

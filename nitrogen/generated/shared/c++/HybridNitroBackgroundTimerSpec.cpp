@@ -14,6 +14,15 @@ namespace margelo::nitro::backgroundtimer {
     HybridObject::loadHybridMethods();
     // load custom methods/properties
     registerHybrids(this, [](Prototype& prototype) {
+      prototype.registerHybridMethod("schedule", &HybridNitroBackgroundTimerSpec::schedule);
+      prototype.registerHybridMethod("cancel", &HybridNitroBackgroundTimerSpec::cancel);
+      prototype.registerHybridMethod("pauseGroup", &HybridNitroBackgroundTimerSpec::pauseGroup);
+      prototype.registerHybridMethod("resumeGroup", &HybridNitroBackgroundTimerSpec::resumeGroup);
+      prototype.registerHybridMethod("cancelGroup", &HybridNitroBackgroundTimerSpec::cancelGroup);
+      prototype.registerHybridMethod("listActiveTimerIds", &HybridNitroBackgroundTimerSpec::listActiveTimerIds);
+      prototype.registerHybridMethod("getStatsJson", &HybridNitroBackgroundTimerSpec::getStatsJson);
+      prototype.registerHybridMethod("getPersistWireJson", &HybridNitroBackgroundTimerSpec::getPersistWireJson);
+      prototype.registerHybridMethod("restorePersistWireJson", &HybridNitroBackgroundTimerSpec::restorePersistWireJson);
       prototype.registerHybridMethod("setTimeout", &HybridNitroBackgroundTimerSpec::setTimeout);
       prototype.registerHybridMethod("clearTimeout", &HybridNitroBackgroundTimerSpec::clearTimeout);
       prototype.registerHybridMethod("setInterval", &HybridNitroBackgroundTimerSpec::setInterval);

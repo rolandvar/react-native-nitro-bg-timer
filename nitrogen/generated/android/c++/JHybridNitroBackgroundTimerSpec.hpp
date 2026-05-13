@@ -54,6 +54,15 @@ namespace margelo::nitro::backgroundtimer {
 
   public:
     // Methods
+    double schedule(double id, double delayMs, const std::string& kind, double intervalMs, const std::string& group, const std::string& driftPolicy, double maxRuns, double correlationToken, double retryMaxAttempts, double retryInitialBackoffMs, const std::string& cancellationToken, double tagMask, const std::string& policyProfile, const std::function<void(double /* id */)>& callback) override;
+    void cancel(double id) override;
+    double pauseGroup(const std::string& group) override;
+    double resumeGroup(const std::string& group) override;
+    double cancelGroup(const std::string& group) override;
+    std::vector<double> listActiveTimerIds() override;
+    std::string getStatsJson() override;
+    std::string getPersistWireJson() override;
+    void restorePersistWireJson(const std::string& wireJson) override;
     double setTimeout(double id, double duration, const std::function<void(double /* id */)>& callback) override;
     void clearTimeout(double id) override;
     double setInterval(double id, double interval, const std::function<void(double /* id */)>& callback) override;

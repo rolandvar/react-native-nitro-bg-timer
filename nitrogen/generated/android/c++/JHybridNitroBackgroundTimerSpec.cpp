@@ -9,6 +9,8 @@
 
 
 
+#include <vector>
+#include <string>
 #include <functional>
 #include "JFunc_void_double.hpp"
 #include <NitroModules/JNICallable.hpp>
@@ -46,6 +48,54 @@ namespace margelo::nitro::backgroundtimer {
   
 
   // Methods
+  double JHybridNitroBackgroundTimerSpec::schedule(double id, double delayMs, const std::string& kind, double intervalMs, const std::string& group, const std::string& driftPolicy, double maxRuns, double correlationToken, double retryMaxAttempts, double retryInitialBackoffMs, const std::string& cancellationToken, double tagMask, const std::string& policyProfile, const std::function<void(double /* id */)>& callback) {
+    static const auto method = _javaPart->javaClassStatic()->getMethod<double(double /* id */, double /* delayMs */, jni::alias_ref<jni::JString> /* kind */, double /* intervalMs */, jni::alias_ref<jni::JString> /* group */, jni::alias_ref<jni::JString> /* driftPolicy */, double /* maxRuns */, double /* correlationToken */, double /* retryMaxAttempts */, double /* retryInitialBackoffMs */, jni::alias_ref<jni::JString> /* cancellationToken */, double /* tagMask */, jni::alias_ref<jni::JString> /* policyProfile */, jni::alias_ref<JFunc_void_double::javaobject> /* callback */)>("schedule_cxx");
+    auto __result = method(_javaPart, id, delayMs, jni::make_jstring(kind), intervalMs, jni::make_jstring(group), jni::make_jstring(driftPolicy), maxRuns, correlationToken, retryMaxAttempts, retryInitialBackoffMs, jni::make_jstring(cancellationToken), tagMask, jni::make_jstring(policyProfile), JFunc_void_double_cxx::fromCpp(callback));
+    return __result;
+  }
+  void JHybridNitroBackgroundTimerSpec::cancel(double id) {
+    static const auto method = _javaPart->javaClassStatic()->getMethod<void(double /* id */)>("cancel");
+    method(_javaPart, id);
+  }
+  double JHybridNitroBackgroundTimerSpec::pauseGroup(const std::string& group) {
+    static const auto method = _javaPart->javaClassStatic()->getMethod<double(jni::alias_ref<jni::JString> /* group */)>("pauseGroup");
+    auto __result = method(_javaPart, jni::make_jstring(group));
+    return __result;
+  }
+  double JHybridNitroBackgroundTimerSpec::resumeGroup(const std::string& group) {
+    static const auto method = _javaPart->javaClassStatic()->getMethod<double(jni::alias_ref<jni::JString> /* group */)>("resumeGroup");
+    auto __result = method(_javaPart, jni::make_jstring(group));
+    return __result;
+  }
+  double JHybridNitroBackgroundTimerSpec::cancelGroup(const std::string& group) {
+    static const auto method = _javaPart->javaClassStatic()->getMethod<double(jni::alias_ref<jni::JString> /* group */)>("cancelGroup");
+    auto __result = method(_javaPart, jni::make_jstring(group));
+    return __result;
+  }
+  std::vector<double> JHybridNitroBackgroundTimerSpec::listActiveTimerIds() {
+    static const auto method = _javaPart->javaClassStatic()->getMethod<jni::local_ref<jni::JArrayDouble>()>("listActiveTimerIds");
+    auto __result = method(_javaPart);
+    return [&]() {
+      size_t __size = __result->size();
+      std::vector<double> __vector(__size);
+      __result->getRegion(0, __size, __vector.data());
+      return __vector;
+    }();
+  }
+  std::string JHybridNitroBackgroundTimerSpec::getStatsJson() {
+    static const auto method = _javaPart->javaClassStatic()->getMethod<jni::local_ref<jni::JString>()>("getStatsJson");
+    auto __result = method(_javaPart);
+    return __result->toStdString();
+  }
+  std::string JHybridNitroBackgroundTimerSpec::getPersistWireJson() {
+    static const auto method = _javaPart->javaClassStatic()->getMethod<jni::local_ref<jni::JString>()>("getPersistWireJson");
+    auto __result = method(_javaPart);
+    return __result->toStdString();
+  }
+  void JHybridNitroBackgroundTimerSpec::restorePersistWireJson(const std::string& wireJson) {
+    static const auto method = _javaPart->javaClassStatic()->getMethod<void(jni::alias_ref<jni::JString> /* wireJson */)>("restorePersistWireJson");
+    method(_javaPart, jni::make_jstring(wireJson));
+  }
   double JHybridNitroBackgroundTimerSpec::setTimeout(double id, double duration, const std::function<void(double /* id */)>& callback) {
     static const auto method = _javaPart->javaClassStatic()->getMethod<double(double /* id */, double /* duration */, jni::alias_ref<JFunc_void_double::javaobject> /* callback */)>("setTimeout_cxx");
     auto __result = method(_javaPart, id, duration, JFunc_void_double_cxx::fromCpp(callback));

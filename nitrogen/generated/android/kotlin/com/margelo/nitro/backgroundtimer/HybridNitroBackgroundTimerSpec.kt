@@ -28,6 +28,47 @@ abstract class HybridNitroBackgroundTimerSpec: HybridObject() {
   
 
   // Methods
+  abstract fun schedule(id: Double, delayMs: Double, kind: String, intervalMs: Double, group: String, driftPolicy: String, maxRuns: Double, correlationToken: Double, retryMaxAttempts: Double, retryInitialBackoffMs: Double, cancellationToken: String, tagMask: Double, policyProfile: String, callback: (id: Double) -> Unit): Double
+  
+  @DoNotStrip
+  @Keep
+  private fun schedule_cxx(id: Double, delayMs: Double, kind: String, intervalMs: Double, group: String, driftPolicy: String, maxRuns: Double, correlationToken: Double, retryMaxAttempts: Double, retryInitialBackoffMs: Double, cancellationToken: String, tagMask: Double, policyProfile: String, callback: Func_void_double): Double {
+    val __result = schedule(id, delayMs, kind, intervalMs, group, driftPolicy, maxRuns, correlationToken, retryMaxAttempts, retryInitialBackoffMs, cancellationToken, tagMask, policyProfile, callback)
+    return __result
+  }
+  
+  @DoNotStrip
+  @Keep
+  abstract fun cancel(id: Double): Unit
+  
+  @DoNotStrip
+  @Keep
+  abstract fun pauseGroup(group: String): Double
+  
+  @DoNotStrip
+  @Keep
+  abstract fun resumeGroup(group: String): Double
+  
+  @DoNotStrip
+  @Keep
+  abstract fun cancelGroup(group: String): Double
+  
+  @DoNotStrip
+  @Keep
+  abstract fun listActiveTimerIds(): DoubleArray
+  
+  @DoNotStrip
+  @Keep
+  abstract fun getStatsJson(): String
+  
+  @DoNotStrip
+  @Keep
+  abstract fun getPersistWireJson(): String
+  
+  @DoNotStrip
+  @Keep
+  abstract fun restorePersistWireJson(wireJson: String): Unit
+  
   abstract fun setTimeout(id: Double, duration: Double, callback: (id: Double) -> Unit): Double
   
   @DoNotStrip

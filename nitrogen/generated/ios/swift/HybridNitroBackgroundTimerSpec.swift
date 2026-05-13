@@ -13,6 +13,15 @@ public protocol HybridNitroBackgroundTimerSpec_protocol: HybridObject {
   
 
   // Methods
+  func schedule(id: Double, delayMs: Double, kind: String, intervalMs: Double, group: String, driftPolicy: String, maxRuns: Double, correlationToken: Double, retryMaxAttempts: Double, retryInitialBackoffMs: Double, cancellationToken: String, tagMask: Double, policyProfile: String, callback: @escaping (_ id: Double) -> Void) throws -> Double
+  func cancel(id: Double) throws -> Void
+  func pauseGroup(group: String) throws -> Double
+  func resumeGroup(group: String) throws -> Double
+  func cancelGroup(group: String) throws -> Double
+  func listActiveTimerIds() throws -> [Double]
+  func getStatsJson() throws -> String
+  func getPersistWireJson() throws -> String
+  func restorePersistWireJson(wireJson: String) throws -> Void
   func setTimeout(id: Double, duration: Double, callback: @escaping (_ id: Double) -> Void) throws -> Double
   func clearTimeout(id: Double) throws -> Void
   func setInterval(id: Double, interval: Double, callback: @escaping (_ id: Double) -> Void) throws -> Double

@@ -14,7 +14,9 @@ namespace NitroBackgroundTimer { class HybridNitroBackgroundTimerSpec_cxx; }
 
 
 
+#include <string>
 #include <functional>
+#include <vector>
 
 #include "NitroBackgroundTimer-Swift-Cxx-Umbrella.hpp"
 
@@ -66,6 +68,74 @@ namespace margelo::nitro::backgroundtimer {
 
   public:
     // Methods
+    inline double schedule(double id, double delayMs, const std::string& kind, double intervalMs, const std::string& group, const std::string& driftPolicy, double maxRuns, double correlationToken, double retryMaxAttempts, double retryInitialBackoffMs, const std::string& cancellationToken, double tagMask, const std::string& policyProfile, const std::function<void(double /* id */)>& callback) override {
+      auto __result = _swiftPart.schedule(std::forward<decltype(id)>(id), std::forward<decltype(delayMs)>(delayMs), kind, std::forward<decltype(intervalMs)>(intervalMs), group, driftPolicy, std::forward<decltype(maxRuns)>(maxRuns), std::forward<decltype(correlationToken)>(correlationToken), std::forward<decltype(retryMaxAttempts)>(retryMaxAttempts), std::forward<decltype(retryInitialBackoffMs)>(retryInitialBackoffMs), cancellationToken, std::forward<decltype(tagMask)>(tagMask), policyProfile, callback);
+      if (__result.hasError()) [[unlikely]] {
+        std::rethrow_exception(__result.error());
+      }
+      auto __value = std::move(__result.value());
+      return __value;
+    }
+    inline void cancel(double id) override {
+      auto __result = _swiftPart.cancel(std::forward<decltype(id)>(id));
+      if (__result.hasError()) [[unlikely]] {
+        std::rethrow_exception(__result.error());
+      }
+    }
+    inline double pauseGroup(const std::string& group) override {
+      auto __result = _swiftPart.pauseGroup(group);
+      if (__result.hasError()) [[unlikely]] {
+        std::rethrow_exception(__result.error());
+      }
+      auto __value = std::move(__result.value());
+      return __value;
+    }
+    inline double resumeGroup(const std::string& group) override {
+      auto __result = _swiftPart.resumeGroup(group);
+      if (__result.hasError()) [[unlikely]] {
+        std::rethrow_exception(__result.error());
+      }
+      auto __value = std::move(__result.value());
+      return __value;
+    }
+    inline double cancelGroup(const std::string& group) override {
+      auto __result = _swiftPart.cancelGroup(group);
+      if (__result.hasError()) [[unlikely]] {
+        std::rethrow_exception(__result.error());
+      }
+      auto __value = std::move(__result.value());
+      return __value;
+    }
+    inline std::vector<double> listActiveTimerIds() override {
+      auto __result = _swiftPart.listActiveTimerIds();
+      if (__result.hasError()) [[unlikely]] {
+        std::rethrow_exception(__result.error());
+      }
+      auto __value = std::move(__result.value());
+      return __value;
+    }
+    inline std::string getStatsJson() override {
+      auto __result = _swiftPart.getStatsJson();
+      if (__result.hasError()) [[unlikely]] {
+        std::rethrow_exception(__result.error());
+      }
+      auto __value = std::move(__result.value());
+      return __value;
+    }
+    inline std::string getPersistWireJson() override {
+      auto __result = _swiftPart.getPersistWireJson();
+      if (__result.hasError()) [[unlikely]] {
+        std::rethrow_exception(__result.error());
+      }
+      auto __value = std::move(__result.value());
+      return __value;
+    }
+    inline void restorePersistWireJson(const std::string& wireJson) override {
+      auto __result = _swiftPart.restorePersistWireJson(wireJson);
+      if (__result.hasError()) [[unlikely]] {
+        std::rethrow_exception(__result.error());
+      }
+    }
     inline double setTimeout(double id, double duration, const std::function<void(double /* id */)>& callback) override {
       auto __result = _swiftPart.setTimeout(std::forward<decltype(id)>(id), std::forward<decltype(duration)>(duration), callback);
       if (__result.hasError()) [[unlikely]] {
